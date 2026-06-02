@@ -1,4 +1,4 @@
-import 'package:control_room/control_room_plugin.dart';
+import 'package:control_room/control_room.dart';
 import 'package:flutter/material.dart';
 
 import './main.dart';

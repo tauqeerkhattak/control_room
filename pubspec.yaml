@@ -1,7 +1,8 @@
 name: control_room
 description: "State Management for Flutter using Streams"
-version: 0.0.1
-homepage:
+version: 1.0.0
+homepage: https://github.com/tauqeerkhattak/control_room.git
+repository: https://github.com/tauqeerkhattak/control_room.git
 
 environment:
   sdk: ^3.10.7

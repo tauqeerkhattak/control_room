@@ -3,7 +3,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 
-import '../control_room_plugin.dart';
+import '../control_room.dart';
 
 part 'state_listener.dart';
 

@@ -2,7 +2,9 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 
-import 'state_controller.dart';
+import 'src/state_controller.dart';
+
+export 'src/state_controller.dart';
 
 /// Signature for a function that creates a [StateController].
 typedef Creator<T extends StateController> = T Function();
@@ -31,7 +33,8 @@ class ControlRoom extends InheritedWidget {
 
   /// Internal helper to find the nearest [ControlRoom] in the widget tree.
   static ControlRoom _of(BuildContext context) {
-    final ControlRoom? room = context.dependOnInheritedWidgetOfExactType<ControlRoom>();
+    final ControlRoom? room = context
+        .dependOnInheritedWidgetOfExactType<ControlRoom>();
     if (room == null) {
       throw StateError(
         'No Control Room widget found!, make sure to add one in the root of your app!',
@@ -49,31 +52,23 @@ class ControlRoom extends InheritedWidget {
   /// Throws a [StateError] if no [Creator] for type [S] is found.
   static S get<S extends StateController>(BuildContext context) {
     final room = _of(context);
-    
-    // Check if already initialized
     for (final controller in _initialized) {
       if (controller is S) {
         log('$S ACCESSED', name: 'CONTROL-ROOM');
         return controller;
       }
     }
-    
-    // Attempt to initialize from creators
     for (final creatorFn in room.controllers) {
-      // Note: This relies on the creator function's return type matching S.
-      // In Dart, we can't easily check the return type of a typedef at runtime 
-      // without invoking it or using mirrors. We invoke it and check the type.
-      final controller = creatorFn();
-      if (controller is S) {
+      final description = creatorFn.runtimeType
+          .toString()
+          .replaceAll('() =>', '')
+          .trim();
+      if (description == S.toString()) {
+        final controller = creatorFn();
         _initialized.add(controller);
-        return controller;
+        return controller as S;
       }
-      
-      // If it's not the right type, we should probably ignore it and keep looking,
-      // but the original logic had a string comparison fallback. 
-      // I'll stick to a more robust type check.
     }
-    
     throw StateError(
       '$S not found, make sure to add $S in ControlRoom widget!',
     );
