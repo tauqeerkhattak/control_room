@@ -15,8 +15,8 @@ typedef Creator<T extends StateController> = T Function();
 /// your application's state controllers. It manages their lifecycle, including
 /// lazy initialization and automatic disposal.
 class ControlRoom extends InheritedWidget {
-  /// The list of functions responsible for creating the controllers.
-  final List<Creator> controllers;
+  /// The map of functions responsible for creating the controllers.
+  final Map<Type, Creator> controllers;
 
   /// Creates a [ControlRoom].
   ///
@@ -29,7 +29,7 @@ class ControlRoom extends InheritedWidget {
   });
 
   /// Internal registry of initialized controllers.
-  static final List _initialized = [];
+  static final Map<Type, StateController> _initialized = {};
 
   /// Internal helper to find the nearest [ControlRoom] in the widget tree.
   static ControlRoom _of(BuildContext context) {
@@ -52,22 +52,15 @@ class ControlRoom extends InheritedWidget {
   /// Throws a [StateError] if no [Creator] for type [S] is found.
   static S get<S extends StateController>(BuildContext context) {
     final room = _of(context);
-    for (final controller in _initialized) {
-      if (controller is S) {
-        log('$S ACCESSED', name: 'CONTROL-ROOM');
-        return controller;
-      }
+    final controller = _initialized[S];
+    if (controller != null) {
+      log('$S ACCESSED', name: 'CONTROL-ROOM');
+      return controller as S;
     }
-    for (final creatorFn in room.controllers) {
-      final description = creatorFn.runtimeType
-          .toString()
-          .replaceAll('() =>', '')
-          .trim();
-      if (description == S.toString()) {
-        final controller = creatorFn();
-        _initialized.add(controller);
-        return controller as S;
-      }
+    if (room.controllers.containsKey(S)) {
+      final controller = room.controllers[S]!();
+      _initialized[S] = controller;
+      return controller as S;
     }
     throw StateError(
       '$S not found, make sure to add $S in ControlRoom widget!',
@@ -79,13 +72,20 @@ class ControlRoom extends InheritedWidget {
   /// This is typically called automatically by [StateListener] when its last
   /// instance is disposed, but can be called manually for custom cleanup.
   static void remove<T extends StateController>() {
-    final temp = List.of(_initialized);
-    for (final controller in temp) {
-      if (controller is T) {
-        controller.dispose();
-        _initialized.remove(controller);
-      }
+    final controller = _initialized[T] as T?;
+    if (controller != null) {
+      controller.dispose();
+      _initialized.remove(T);
     }
+  }
+
+  /// Internal helper to clear the registry. (Used for testing)
+  @visibleForTesting
+  static void clearRegistry() {
+    for (final controller in _initialized.values) {
+      controller.dispose();
+    }
+    _initialized.clear();
   }
 
   @override

@@ -6,7 +6,10 @@ import 'second_page.dart';
 void main() {
   runApp(
     ControlRoom(
-      controllers: [() => CounterController(), () => ToggleController()],
+      controllers: {
+        CounterController: () => CounterController(),
+        ToggleController: () => ToggleController(),
+      },
       child: const MyApp(),
     ),
   );
