@@ -24,6 +24,11 @@ class DisposableController extends StateController<int> {
 }
 
 void main() {
+  setUp(() {
+    // Clear initialized controllers before each test
+    ControlRoom.clearRegistry();
+  });
+
   group('StateController Tests', () {
     test('initial state is set correctly', () {
       final controller = TestController();
@@ -39,6 +44,8 @@ void main() {
     test('state stream emits updates', () async {
       final controller = TestController();
       final states = <int>[];
+
+      controller.stream.listen(states.add);
 
       controller.increment();
 
@@ -56,7 +63,7 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(
             home: ControlRoom(
-              controllers: [() => TestController()],
+              controllers: {TestController: () => TestController()},
               child: Scaffold(
                 body: StateListener<TestController, int>(
                   builder: (context, state) {
@@ -97,10 +104,10 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(
             home: ControlRoom(
-              controllers: [
-                () => TestController(),
-                () => AnotherTestController(),
-              ],
+              controllers: {
+                TestController: () => TestController(),
+                AnotherTestController: () => AnotherTestController(),
+              },
               child: const SizedBox(),
             ),
           ),
@@ -138,7 +145,10 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: ControlRoom(
-            controllers: [() => DisposableController(() => disposed = true)],
+            controllers: {
+              DisposableController: () =>
+                  DisposableController(() => disposed = true),
+            },
             child: Builder(
               builder: (context) {
                 ControlRoom.get<DisposableController>(context);
@@ -151,6 +161,33 @@ void main() {
 
       ControlRoom.remove<DisposableController>();
       expect(disposed, true);
+    });
+
+    testWidgets('ControlRoom.get triggers lazy initialization and logging', (
+      WidgetTester tester,
+    ) async {
+      int initCount = 0;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: ControlRoom(
+            controllers: {
+              TestController: () {
+                initCount++;
+                return TestController();
+              },
+            },
+            child: const SizedBox(),
+          ),
+        ),
+      );
+
+      final context = tester.element(find.byType(SizedBox));
+
+      expect(initCount, 0); // Lazy
+      ControlRoom.get<TestController>(context);
+      expect(initCount, 1);
+      ControlRoom.get<TestController>(context);
+      expect(initCount, 1); // Singleton
     });
   });
 }

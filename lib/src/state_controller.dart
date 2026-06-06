@@ -25,13 +25,18 @@ abstract class StateController<S> {
   }
 
   final _streamController = StreamController<S>.broadcast();
+  late final stream = _streamController.stream;
   late S _currentState;
+  bool _disposed = false;
 
   /// Returns the current state.
   S get state => _currentState;
 
   /// Updates the state and notifies all listeners.
   set state(S newState) {
+    if (_disposed) {
+      throw StateError('Cannot set state while $runtimeType is disposed!');
+    }
     _currentState = newState;
     _streamController.add(newState);
   }
@@ -51,6 +56,10 @@ abstract class StateController<S> {
   @mustCallSuper
   void dispose() {
     log('DISPOSING $runtimeType', name: 'CONTROL-ROOM');
+    if (_disposed) {
+      return;
+    }
+    _disposed = true;
     _streamController.close();
   }
 }

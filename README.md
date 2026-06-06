@@ -51,10 +51,10 @@ The `ControlRoom` widget serves as the provider for your controllers. It should 
 void main() {
   runApp(
     ControlRoom(
-      controllers: [
-        () => CounterController(),
-        () => SettingsController(),
-      ],
+      controllers: {
+        CounterController: () => CounterController(),
+        SettingsController: () => SettingsController(),
+      },
       child: const MyApp(),
     ),
   );
