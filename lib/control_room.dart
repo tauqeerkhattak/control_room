@@ -69,8 +69,8 @@ class ControlRoom extends InheritedWidget {
 
   /// Removes and disposes the [StateController] of type [T].
   ///
-  /// This is typically called automatically by [StateListener] when its last
-  /// instance is disposed, but can be called manually for custom cleanup.
+  /// This is typically called automatically by [StateListener] or [StateSelector]
+  /// when its last instance is disposed, but can be called manually for custom cleanup.
   static void remove<T extends StateController>() {
     final controller = _initialized[T] as T?;
     if (controller != null) {

@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.0] - 2024-06-04
+
+### Added
+
+- Implementation of `StateSelector` for granular rebuilds based on specific state changes.
+
 ## [1.1.0] - 2024-06-03
 
 ### Changed

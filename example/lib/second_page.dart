@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:control_room/control_room.dart';
 import 'package:flutter/material.dart';
 
@@ -28,13 +30,35 @@ class SecondPage extends StatelessWidget {
               },
             ),
             const Divider(),
-            StateListener<ToggleController, bool>(
+            StateSelector<ThemeController, ThemeMode>(
+              selector: (controller) => controller.state.themeMode,
               builder: (_, value) {
+                log('Toggle Dark Mode Rebuilt!');
+                return SwitchListTile(
+                  value: value.isDark,
+                  title: const Text('Toggle Dark Mode'),
+                  onChanged: (_) {
+                    final themeMode = value.isDark
+                        ? ThemeMode.light
+                        : ThemeMode.dark;
+                    ControlRoom.get<ThemeController>(
+                      context,
+                    ).changeThemeMode(themeMode);
+                  },
+                );
+              },
+            ),
+            const Divider(),
+            StateSelector<ThemeController, bool>(
+              selector: (controller) => controller.state.useMaterial3,
+              builder: (_, value) {
+                log('Use Material 3 Rebuilt!');
                 return SwitchListTile(
                   value: value,
-                  title: const Text('Toggle Controller Status'),
-                  onChanged: (_) =>
-                      ControlRoom.get<ToggleController>(context).toggle(),
+                  title: const Text('Toggle Material3'),
+                  onChanged: (_) {
+                    ControlRoom.get<ThemeController>(context).toggleMaterial3();
+                  },
                 );
               },
             ),
@@ -42,18 +66,16 @@ class SecondPage extends StatelessWidget {
         ),
       ),
       floatingActionButton: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
+        mainAxisAlignment: .end,
         children: [
           FloatingActionButton(
             onPressed: () => controller.increment(),
-            heroTag: 'inc2',
             tooltip: 'Increment',
             child: const Icon(Icons.add),
           ),
           const SizedBox(height: 8),
           FloatingActionButton(
             onPressed: () => controller.decrement(),
-            heroTag: 'dec2',
             tooltip: 'Decrement',
             child: const Icon(Icons.remove),
           ),
@@ -63,10 +85,28 @@ class SecondPage extends StatelessWidget {
   }
 }
 
-class ToggleController extends StateController<bool> {
-  ToggleController() : super(false);
+class ThemeController extends StateController<ThemeState> {
+  ThemeController() : super(const ThemeState());
 
-  void toggle() {
-    state = !state;
+  void toggleMaterial3() {
+    state = state.copyWith(useMaterial3: !state.useMaterial3);
+  }
+
+  void changeThemeMode(ThemeMode themeMode) {
+    state = state.copyWith(themeMode: themeMode);
+  }
+}
+
+class ThemeState {
+  final ThemeMode themeMode;
+  final bool useMaterial3;
+
+  const ThemeState({this.themeMode = ThemeMode.dark, this.useMaterial3 = true});
+
+  ThemeState copyWith({ThemeMode? themeMode, bool? useMaterial3}) {
+    return ThemeState(
+      themeMode: themeMode ?? this.themeMode,
+      useMaterial3: useMaterial3 ?? this.useMaterial3,
+    );
   }
 }

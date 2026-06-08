@@ -10,6 +10,7 @@ Control Room provides a structured architecture for managing application state b
 
 - **Decoupled Logic**: Business logic is encapsulated within `StateController` classes.
 - **Reactive UI**: Automatic UI reconstruction via the `StateListener` widget.
+- **Granular Updates**: Precise rebuild control using the `StateSelector` widget.
 - **Dependency Injection**: Seamless access to controllers across the widget tree using `ControlRoom`.
 - **Resource Management**: Automatic initialization and disposal of controllers to prevent memory leaks.
 - **Developer Friendly**: Minimal boilerplate and a clean, predictable API.
@@ -76,7 +77,20 @@ StateListener<CounterController, int>(
 )
 ```
 
-### 4. Accessing Controllers
+### 4. StateSelector
+
+The `StateSelector` widget allows you to rebuild only when a specific part of the state changes. This is more efficient than `StateListener` when you have a large state object and only need to react to a subset of its properties.
+
+```dart
+StateSelector<CounterController, bool>(
+  selector: (controller) => controller.state > 10,
+  builder: (context, isLarge) {
+    return Text('Is count large? $isLarge');
+  },
+)
+```
+
+### 5. Accessing Controllers
 
 You can access any registered controller from the widget tree using the `ControlRoom.get<T>(context)` method.
 
@@ -90,7 +104,8 @@ controller.increment();
 ## Best Practices
 
 - **Single Responsibility**: Each `StateController` should manage a specific piece of state or feature.
-- **Granular Rebuilds**: Use `StateListener` as deep as possible in the widget tree to minimize the scope of rebuilds.
+- **Granular Rebuilds**: Use `StateListener` or `StateSelector` as deep as possible in the widget tree to minimize the scope of rebuilds.
+- **Performance**: Prefer `StateSelector` over `StateListener` when you only need to rebuild for specific property changes.
 - **Method Calls**: Call controller methods from event handlers (e.g., `onPressed`) rather than during the `build` phase.
 
 ## Example
