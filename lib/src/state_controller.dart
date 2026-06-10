@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../control_room.dart';
 
 part 'state_listener.dart';
+part 'state_selector.dart';
 
 /// Base class for all state controllers in the Control Room architecture.
 ///

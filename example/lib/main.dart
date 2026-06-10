@@ -8,7 +8,7 @@ void main() {
     ControlRoom(
       controllers: {
         CounterController: () => CounterController(),
-        ToggleController: () => ToggleController(),
+        ThemeController: () => ThemeController(),
       },
       child: const MyApp(),
     ),
